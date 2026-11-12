@@ -178,12 +178,60 @@
       .actions{ display:flex; flex-wrap:wrap; gap:10px; margin:4px 0 16px; }
       .foot{ color:var(--muted); font-size:.85rem; margin-top:8px; }
       [hidden]{ display:none !important; }
+
+      /* ---------- Profesional: navegación y secciones ---------- */
+      .section-head{ display:flex; justify-content:space-between; align-items:flex-end; gap:12px; margin-bottom:12px; flex-wrap:wrap; }
+      .section-head p{ color:var(--muted); margin:2px 0 0; font-size:.92rem; max-width:62ch; }
+      .navdash{ display:flex; gap:8px; overflow-x:auto; padding:4px 0 10px; margin-bottom:6px; scrollbar-width:none; }
+      .navdash::-webkit-scrollbar{ display:none; }
+      .navdash a{ flex:0 0 auto; text-decoration:none; color:var(--ink); background:var(--surface); border:1px solid var(--line); padding:8px 13px; border-radius:999px; font-size:.88rem; font-weight:700; }
+      .navdash a:hover{ border-color:var(--accent); color:var(--accent-strong); }
+      .grid2{ display:grid; gap:16px; }
+      @media(min-width:860px){ .grid2{ grid-template-columns:1fr 1fr; } .grid2 .wide{ grid-column:1 / -1; } }
+      .grid3{ display:grid; gap:12px; }
+      @media(min-width:820px){ .grid3{ grid-template-columns:repeat(3,1fr); } }
+
+      /* Hallazgos */
+      .insight{ background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:16px; box-shadow:var(--shadow); }
+      .insight .k{ font-size:.78rem; letter-spacing:.05em; text-transform:uppercase; color:var(--muted); font-weight:800; }
+      .insight .v{ font-size:1.35rem; font-weight:800; letter-spacing:-.02em; margin:4px 0 2px; }
+      .insight p{ margin:0; color:var(--muted); font-size:.92rem; }
+      .insight strong{ color:var(--ink); }
+      .trend-up{ color:var(--accent-strong); font-weight:800; } .trend-down{ color:var(--red); font-weight:800; }
+      @media(prefers-color-scheme:dark){ .trend-up{ color:var(--accent); } }
+
+      /* Donut y leyenda */
+      .donut-wrap{ display:flex; gap:18px; align-items:center; flex-wrap:wrap; }
+      .donut-wrap svg{ width:168px; height:168px; flex:0 0 auto; }
+      .legend{ display:grid; gap:8px; flex:1 1 180px; }
+      .legend div{ display:flex; justify-content:space-between; gap:12px; font-size:.93rem; border-bottom:1px solid var(--line); padding-bottom:7px; }
+      .legend div:last-child{ border-bottom:none; }
+      .dot{ display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:7px; vertical-align:middle; }
+
+      /* Alertas */
+      .alert-list{ display:grid; gap:10px; }
+      @media(min-width:720px){ .alert-list{ grid-template-columns:1fr 1fr; } }
+      .alert-item{ border:1px solid var(--line); border-radius:12px; padding:13px 14px; display:flex; gap:12px; align-items:flex-start; }
+      .alert-item .tag{ font-size:.72rem; font-weight:800; letter-spacing:.04em; text-transform:uppercase; padding:3px 7px; border-radius:999px; white-space:nowrap; }
+      .tag.red{ background:var(--red-bg); color:var(--red); } .tag.gold{ background:var(--gold-bg); color:var(--gold); } .tag.green{ background:var(--green-bg); color:var(--accent-strong); }
+      .alert-item b{ display:block; } .alert-item span{ color:var(--muted); font-size:.9rem; }
+
+      /* ABC */
+      .abc-a{ background:var(--green-bg); color:var(--accent-strong); } .abc-b{ background:var(--gold-bg); color:var(--gold); } .abc-c{ background:var(--surface2); color:var(--muted); }
+      .mini-note{ font-size:.86rem; color:var(--muted); margin-top:10px; }
+      .compare{ display:grid; gap:10px; }
+      @media(min-width:720px){ .compare{ grid-template-columns:1fr 1fr 1fr; } }
+      .compare div{ background:var(--surface2); border-radius:12px; padding:13px; }
+      .compare .lbl{ font-size:.78rem; font-weight:800; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); }
+      .compare .big{ font-size:1.2rem; font-weight:800; margin-top:3px; }
+      .kpi .delta{ display:inline-block; margin-top:6px; font-size:.8rem; font-weight:750; padding:2px 7px; border-radius:999px; background:var(--surface2); }
+    
     </style>
   </head>
   <body>
     <main class="wrap">
       <h1>Análisis de ventas DIGAR</h1>
-      <p class="sub">Carga el archivo de respaldo que guarda tu DIGAR POS y mira todo junto: qué se vende, cuánto, qué casi no se mueve, la rotación de cada producto y la ganancia.</p>
+      <p class="sub">Panel profesional de tu negocio: ventas, ganancia, rotación, concentración de ingresos, comportamiento por día de semana, clientes e inventario — todo calculado desde el respaldo de tu POS.</p>
 
       <!-- ============ CARGA ============ -->
       <section id="carga">
@@ -243,13 +291,54 @@
           </div>
         </div>
 
+        <nav class="navdash" aria-label="Ir a una sección">
+          <a href="#sec-resumen">Resumen</a><a href="#sec-hallazgos">Hallazgos</a><a href="#sec-graficas">Gráficas</a><a href="#sec-abc">Análisis ABC</a><a href="#sec-productos">Productos</a><a href="#sec-alertas">Alertas</a><a href="#sec-clientes">Clientes</a>
+        </nav>
+
+        <div id="sec-resumen"></div>
         <section class="kpis" id="kpis" aria-label="Resumen"></section>
 
+        <div id="sec-hallazgos"></div>
+        <section style="margin-bottom:16px">
+          <div class="section-head"><div><h2>Hallazgos clave</h2><p>Lectura automática del periodo: qué sostiene el negocio, dónde se concentra el dinero y qué merece atención.</p></div></div>
+          <div class="grid3" id="insights"></div>
+        </section>
+
+        <section class="card">
+          <div class="section-head"><div><h2>Tendencia del periodo</h2><p>Compara la segunda mitad contra la primera mitad del periodo elegido.</p></div></div>
+          <div class="compare" id="compareBox"></div>
+        </section>
+
+        <div id="sec-graficas"></div>
         <section class="card chartbox">
           <h2 id="chartTitle">Ventas por día</h2>
           <p class="hint" id="chartHint"></p>
           <div id="chart"></div>
+          <p class="mini-note" id="chartStats"></p>
         </section>
+
+        <div class="grid2">
+          <section class="card chartbox">
+            <h2>Ventas por día de semana</h2>
+            <p class="hint">Qué días venden más. Sirve para surtir y preparar ruta con anticipación.</p>
+            <div id="weekdayChart"></div>
+          </section>
+          <section class="card chartbox">
+            <h2>Rotación del catálogo</h2>
+            <p class="hint">Cómo se reparte tu catálogo según la velocidad de venta.</p>
+            <div id="rotationDonut"></div>
+          </section>
+          <section class="card chartbox">
+            <h2>Concentración de ingresos · Pareto</h2>
+            <p class="hint">Cuántos productos generan el 80&nbsp;% de las ventas. Mientras menos sean, más depende el negocio de pocos artículos.</p>
+            <div id="paretoChart"></div>
+          </section>
+          <section class="card chartbox">
+            <h2>Top 10 por ganancia</h2>
+            <p class="hint">No siempre lo que más se vende es lo que más deja.</p>
+            <div id="topProfit"></div>
+          </section>
+        </div>
 
         <section class="card">
           <div class="topgrid">
@@ -264,6 +353,21 @@
           </div>
         </section>
 
+        <div id="sec-abc"></div>
+        <section class="card">
+          <div class="section-head"><div><h2>Análisis ABC de productos</h2><p>Clasifica por aporte a los ingresos: <strong>A</strong> = los que sostienen el negocio, <strong>B</strong> = aporte medio, <strong>C</strong> = cola larga.</p></div></div>
+          <div id="abcSummary" class="compare" style="margin-bottom:14px"></div>
+          <div id="abcTable"></div>
+          <p class="mini-note">Regla usada: A acumula hasta el 80&nbsp;% de los ingresos, B hasta el 95&nbsp;% y C el resto. Revisa que ningún producto A se quede sin stock.</p>
+        </section>
+
+        <div id="sec-alertas"></div>
+        <section class="card">
+          <div class="section-head"><div><h2>Alertas de inventario</h2><p>Acciones concretas que salen de cruzar ventas con existencias.</p></div></div>
+          <div class="alert-list" id="alertsList"></div>
+        </section>
+
+        <div id="sec-productos"></div>
         <section class="card">
           <h2>Todos los productos</h2>
           <p class="hint">Rotación = piezas que se venden por día en el periodo. «Días de stock» estima cuánto te dura lo que tienes, al ritmo que se vende.</p>
@@ -287,10 +391,19 @@
           <div class="slow" id="slowList"></div>
         </section>
 
+        <div id="sec-clientes"></div>
         <section class="card" id="clientsCard" hidden>
           <h2>Clientes que más compran</h2>
           <p class="hint">Según las ventas del periodo.</p>
+          <div id="topClientsChart" style="margin-bottom:16px"></div>
           <div id="clientsTable"></div>
+        </section>
+
+        <section class="card">
+          <h2>Distribución de tickets</h2>
+          <p class="hint">En qué rangos caen tus ventas. Ayuda a entender si vendes de a poco o por pedidos grandes.</p>
+          <div id="ticketChart"></div>
+          <p class="mini-note" id="ticketNote"></p>
         </section>
 
         <section class="card">
@@ -623,11 +736,44 @@
         var dailyArr = Object.keys(daily).map(function(k){ return daily[k]; }).sort(function(a,b){ return a.date - b.date; });
         var clients = Object.keys(clientAgg).map(function(k){ return clientAgg[k]; }).sort(function(a,b){ return b.total - a.total; });
 
+        /* --- Análisis extra profesional --- */
+        var weekday = [0,1,2,3,4,5,6].map(function(i){ return { idx:i, total:0, count:0 }; });
+        sales.forEach(function(s){ if(s.date){ var wd=(s.date.getDay()+6)%7; weekday[wd].total+=s.total; weekday[wd].count++; } });
+        var sortedByIncome = productRows.slice().filter(function(p){return p.ingreso>0;}).sort(function(a,b){return b.ingreso-a.ingreso;});
+        var cum=0, pareto=[], abcRows=[], countsABC={A:0,B:0,C:0}, incomeABC={A:0,B:0,C:0};
+        sortedByIncome.forEach(function(p,i){
+          cum+=p.ingreso; var pct = totalVentas? (cum/totalVentas)*100:0;
+          pareto.push({name:p.name, ingreso:p.ingreso, cumPct:pct});
+          var claseABC = pct<=80 || i===0 ? "A" : ( (cum-p.ingreso)/ (totalVentas||1) *100 <95 ? "B":"C");
+          // corrección: B si el acumulado previo <95
+          var prevPct = totalVentas? ((cum-p.ingreso)/totalVentas)*100:0;
+          claseABC = prevPct<80 ? "A" : (prevPct<95 ? "B":"C");
+          p.abc = claseABC; countsABC[claseABC]++; incomeABC[claseABC]+=p.ingreso;
+          abcRows.push(p);
+        });
+        productRows.forEach(function(p){ if(!p.abc) p.abc="C"; if(p.ingreso===0){ countsABC.C++; } });
+        var ticketBuckets=[{label:"$0 – $100",min:0,max:100,count:0},{label:"$101 – $250",min:100,max:250,count:0},{label:"$251 – $500",min:250,max:500,count:0},{label:"$501 – $1,000",min:500,max:1000,count:0},{label:"Más de $1,000",min:1000,max:Infinity,count:0}];
+        sales.forEach(function(s){ for(var bi=0;bi<ticketBuckets.length;bi++){ if(s.total>ticketBuckets[bi].min && s.total<=ticketBuckets[bi].max || (bi===0 && s.total<=100)){ ticketBuckets[bi].count++; break; } } });
+        var half = Math.floor(dailyArr.length/2);
+        var firstHalf = dailyArr.slice(0,half), secondHalf = dailyArr.slice(half);
+        function sumD(a){ return a.reduce(function(s,d){return s+d.total;},0); }
+        var fh=sumD(firstHalf), sh=sumD(secondHalf);
+        var growth = fh>0 ? ((sh-fh)/fh)*100 : null;
+        var bestDay = dailyArr.slice().sort(function(a,b){return b.total-a.total;})[0]||null;
+        var worstDay = dailyArr.length>1 ? dailyArr.slice().sort(function(a,b){return a.total-b.total;})[0]:null;
+        var avgDaily = dailyArr.length? totalVentas/dailyArr.length : 0;
+        // desviación simple para consistencia
+        var variance = dailyArr.length? dailyArr.reduce(function(s,d){return s+Math.pow(d.total-avgDaily,2);},0)/dailyArr.length:0;
+        var std = Math.sqrt(variance);
+
         return {
           sales: sales, dias: dias, totalVentas: totalVentas,
           profit: profitKnown ? totalProfit : null, profitKnown: profitKnown,
           piezas: piezas, ticket: sales.length ? totalVentas / sales.length : 0,
-          daily: dailyArr, products: productRows, clients: clients
+          daily: dailyArr, products: productRows, clients: clients,
+          weekday: weekday, pareto: pareto, abcRows: abcRows, countsABC: countsABC, incomeABC: incomeABC,
+          ticketBuckets: ticketBuckets, firstHalfTotal: fh, secondHalfTotal: sh, growth: growth,
+          bestDay: bestDay, worstDay: worstDay, avgDailyWithSales: avgDaily, stdDaily: std
         };
       }
 
@@ -643,12 +789,106 @@
         var agg = aggregate();
         state.lastAgg = agg;
         renderKpis(agg);
+        renderInsights(agg);
+        renderCompare(agg);
         renderChart(agg);
+        renderWeekday(agg);
+        renderDonut(agg);
+        renderPareto(agg);
+        renderTopProfit(agg);
+        renderABC(agg);
+        renderAlerts(agg);
         renderTops(agg);
         renderProducts(agg);
         renderSlow(agg);
         renderClients(agg);
+        renderTickets(agg);
         renderRecent(agg);
+      }
+      function pctChange(v){ if(v==null) return "Sin base para comparar"; return (v>=0?"+":"") + (Math.round(v*10)/10).toLocaleString("es-MX") + " %"; }
+      function renderInsights(agg){
+        var top = agg.products.slice().sort(function(a,b){return b.ingreso-a.ingreso;})[0];
+        var pareto80 = agg.pareto.findIndex(function(p){return p.cumPct>=80;});
+        var nPareto = pareto80>=0? pareto80+1 : agg.pareto.length;
+        var sinVenta = agg.products.filter(function(p){return p.piezas===0;}).length;
+        var wdBest = agg.weekday.slice().sort(function(a,b){return b.total-a.total;})[0];
+        var wdNames=["lunes","martes","miércoles","jueves","viernes","sábado","domingo"];
+        var cards=[
+          {k:"Producto que sostiene el negocio", v: top? top.name : "—", p: top? ("<strong>"+fmtMoney(top.ingreso)+"</strong> en ingresos · "+fmtNum(top.piezas)+" pz · "+(agg.totalVentas? fmtPct(top.ingreso/agg.totalVentas*100):"—")+" de tus ventas.") : "Sin ventas en el periodo."},
+          {k:"Concentración Pareto", v: nPareto ? (nPareto+" de "+agg.pareto.length+" productos") : "—", p:"generan el <strong>80&nbsp;% de los ingresos</strong>. Cuida stock y precio de ese grupo primero."},
+          {k:"Mejor día de semana", v: wdBest && wdBest.total? wdNames[wdBest.idx] : "—", p: wdBest? ("<strong>"+fmtMoney(wdBest.total)+"</strong> acumulado en "+fmtNum(wdBest.count)+" ventas ese día.") : "Sin fechas suficientes."},
+          {k:"Catálogo sin movimiento", v: fmtNum(sinVenta)+" productos", p: sinVenta? "no vendieron nada en el periodo. Revisa si son de oportunidad ya terminada o capital detenido." : "Todo el catálogo vendió al menos una pieza."},
+          {k:"Mejor día del periodo", v: agg.bestDay? fmtMoney(agg.bestDay.total):"—", p: agg.bestDay? (fmtFecha(agg.bestDay.date)+" · "+fmtNum(agg.bestDay.count)+" ventas en ese día."):"Sin datos por día."},
+          {k:"Consistencia diaria", v: agg.stdDaily? fmtMoney(Math.round(agg.stdDaily))+" de variación" : "—", p:"Promedio en días con venta: <strong>"+fmtMoney(agg.avgDailyWithSales)+"</strong>. Variación alta = días muy buenos y días muy flojos."}
+        ];
+        document.getElementById("insights").innerHTML = cards.map(function(c){ return '<article class="insight"><div class="k">'+esc(c.k)+'</div><div class="v">'+esc(c.v)+'</div><p>'+c.p+'</p></article>'; }).join("");
+      }
+      function renderCompare(agg){
+        var g = agg.growth;
+        var cls = g==null?"":(g>=0?"trend-up":"trend-down");
+        var marg = agg.profit!=null && agg.totalVentas? (agg.profit/agg.totalVentas*100):null;
+        document.getElementById("compareBox").innerHTML =
+          '<div><div class="lbl">Primera mitad</div><div class="big">'+fmtMoney(agg.firstHalfTotal)+'</div><div class="muted small">Inicio del periodo</div></div>'+
+          '<div><div class="lbl">Segunda mitad</div><div class="big">'+fmtMoney(agg.secondHalfTotal)+'</div><div class="muted small">Cierre del periodo</div></div>'+
+          '<div><div class="lbl">Cambio</div><div class="big '+cls+'">'+pctChange(g)+'</div><div class="muted small">'+(marg!=null? "Margen global "+fmtPct(marg):"Sin costos para margen")+'</div></div>';
+        var cs=document.getElementById("chartStats");
+        if(cs) cs.textContent = agg.bestDay? ("Mejor día: "+fmtFecha(agg.bestDay.date)+" con "+fmtMoney(agg.bestDay.total)+". Promedio en días con venta: "+fmtMoney(agg.avgDailyWithSales)+"."):"";
+      }
+      function renderWeekday(agg){
+        var names=["Lun","Mar","Mié","Jue","Vie","Sáb","Dom"]; var full=["lunes","martes","miércoles","jueves","viernes","sábado","domingo"];
+        var max=Math.max.apply(null, agg.weekday.map(function(d){return d.total;}).concat([1]));
+        var W=340,H=180,base=140,top=12,slot=W/7,bw=30;
+        var parts=['<line x1="0" y1="'+base+'" x2="'+W+'" y2="'+base+'" stroke="var(--line)"/>'];
+        agg.weekday.forEach(function(d,i){ var h=Math.max(2,(d.total/max)*(base-top)); var x=i*slot+(slot-bw)/2; parts.push('<rect x="'+x+'" y="'+(base-h)+'" width="'+bw+'" height="'+h+'" rx="4" fill="var(--bar)"><title>'+full[i]+": "+fmtMoney(d.total)+'</title></rect><text x="'+(i*slot+slot/2)+'" y="'+(base+18)+'" text-anchor="middle" font-size="11" fill="var(--muted)">'+names[i]+'</text>'); });
+        document.getElementById("weekdayChart").innerHTML = agg.daily.length? '<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Ventas por día de semana">'+parts.join("")+'</svg>' : '<p class="muted">Sin fechas para calcular.</p>';
+      }
+      function renderDonut(agg){
+        var counts={alta:0,media:0,baja:0,cero:0}; agg.products.forEach(function(p){counts[p.clase]++;});
+        var total=agg.products.length||1;
+        var segs=[{k:"alta",label:"Alta",color:"#0b6e4f",v:counts.alta},{k:"media",label:"Media",color:"#c07f13",v:counts.media},{k:"baja",label:"Baja",color:"#b3261e",v:counts.baja},{k:"cero",label:"Sin ventas",color:"#9aa79c",v:counts.cero}];
+        var r=62,c=2*Math.PI*r,off=0,paths='';
+        segs.forEach(function(s){ if(!s.v) return; var frac=s.v/total; var len=frac*c; paths+='<circle cx="84" cy="84" r="'+r+'" fill="none" stroke="'+s.color+'" stroke-width="20" stroke-dasharray="'+Math.max(0,len-2)+' '+c+'" stroke-dashoffset="'+(-off)+'" transform="rotate(-90 84 84)"/>'; off+=len; });
+        var legend=segs.map(function(s){return '<div><span><span class="dot" style="background:'+s.color+'"></span>'+s.label+'</span><b>'+s.v+' · '+fmtPct(s.v/total*100)+'</b></div>';}).join("");
+        document.getElementById("rotationDonut").innerHTML='<div class="donut-wrap"><svg viewBox="0 0 168 168" role="img" aria-label="Distribución de rotación">'+paths+'<text x="84" y="80" text-anchor="middle" font-size="22" font-weight="800" fill="var(--ink)">'+total+'</text><text x="84" y="98" text-anchor="middle" font-size="11" fill="var(--muted)">productos</text></svg><div class="legend">'+legend+'</div></div>';
+      }
+      function renderPareto(agg){
+        var box=document.getElementById("paretoChart");
+        if(!agg.pareto.length){box.innerHTML='<p class="muted">Sin ingresos en el periodo.</p>';return;}
+        var show=agg.pareto.slice(0,12);
+        box.innerHTML=show.map(function(p,i){return '<div class="bar-row"><span class="nm">'+(i+1)+'. '+esc(p.name)+'</span><span class="vl">'+fmtPct(p.cumPct)+' acum.</span><span class="bar-track"><span class="bar-fill" style="width:'+Math.min(100,p.cumPct)+'%"></span></span></div>';}).join("")+'<p class="mini-note">La barra es el % acumulado de ingresos hasta ese producto.</p>';
+      }
+      function renderTopProfit(agg){
+        var rows=agg.products.slice().filter(function(p){return p.costKnown;}).sort(function(a,b){return b.ganancia-a.ganancia;}).slice(0,10);
+        if(!rows.length){document.getElementById("topProfit").innerHTML='<p class="muted">Este respaldo no trae costos, así que no se puede rankear por ganancia.</p>';return;}
+        barList("topProfit", rows, function(p){return Math.max(0,p.ganancia);}, function(p){return fmtMoney(p.ganancia);}, false);
+      }
+      function renderABC(agg){
+        document.getElementById("abcSummary").innerHTML=
+          '<div><div class="lbl">Clase A · hasta 80% ingresos</div><div class="big">'+agg.countsABC.A+' productos</div><div class="muted small">'+fmtMoney(agg.incomeABC.A)+'</div></div>'+
+          '<div><div class="lbl">Clase B · hasta 95%</div><div class="big">'+agg.countsABC.B+' productos</div><div class="muted small">'+fmtMoney(agg.incomeABC.B)+'</div></div>'+
+          '<div><div class="lbl">Clase C · resto</div><div class="big">'+agg.countsABC.C+' productos</div><div class="muted small">'+fmtMoney(agg.incomeABC.C)+'</div></div>';
+        var rows=agg.abcRows.slice(0,25);
+        if(!rows.length){document.getElementById("abcTable").innerHTML='<p class="muted">Sin productos con ingresos.</p>';return;}
+        var head="<thead><tr><th>Clase</th><th>Producto</th><th class='num'>Ingresos</th><th class='num'>% del total</th><th class='num'>Piezas</th></tr></thead>";
+        var body=rows.map(function(p){var cls=p.abc==="A"?"abc-a":p.abc==="B"?"abc-b":"abc-c"; return "<tr><td><span class='badge "+cls+"'>"+p.abc+"</span></td><td class='head-cell'>"+esc(p.name)+"</td><td class='num' data-label='Ingresos'>"+fmtMoney(p.ingreso)+"</td><td class='num' data-label='%'>"+fmtPct(agg.totalVentas?p.ingreso/agg.totalVentas*100:0)+"</td><td class='num' data-label='Piezas'>"+fmtNum(p.piezas)+"</td></tr>";}).join("");
+        document.getElementById("abcTable").innerHTML='<table class="resp">'+head+"<tbody>"+body+"</tbody></table>"+(agg.abcRows.length>25?'<p class="mini-note">Mostrando los primeros 25 por ingresos. El resto está en la tabla completa de productos.</p>':"");
+      }
+      function renderAlerts(agg){
+        var alerts=[];
+        agg.products.forEach(function(p){
+          if(p.stock===0 && p.piezas>0) alerts.push({tag:"red",label:"Sin stock",name:p.name,dt:p.piezas+" pz vendidas en el periodo y stock en 0."});
+          else if(p.stock!=null && p.diasStock!=null && p.diasStock<=7 && p.piezas>0) alerts.push({tag:"gold",label:"Se acaba pronto",name:p.name,dt:"Stock "+fmtNum(p.stock)+" · aprox. "+fmtNum(Math.round(p.diasStock))+" días al ritmo actual."});
+          else if(p.piezas===0 && p.stock!=null && p.stock>50) alerts.push({tag:"gold",label:"Capital detenido",name:p.name,dt:fmtNum(p.stock)+" pz en existencia y 0 ventas en el periodo."});
+          else if(p.clase==="alta" && p.margen!=null && p.margen<10) alerts.push({tag:"green",label:"Revisar margen",name:p.name,dt:"Se vende mucho ("+fmtNum(p.piezas)+" pz) pero deja solo "+fmtPct(p.margen)+" de margen."});
+        });
+        alerts=alerts.slice(0,12);
+        document.getElementById("alertsList").innerHTML= alerts.length? alerts.map(function(a){return '<div class="alert-item"><span class="tag '+a.tag+'">'+a.label+'</span><div><b>'+esc(a.name)+'</b><span>'+esc(a.dt)+'</span></div></div>';}).join("") : '<p class="muted">Sin alertas: no hay productos vendidos en cero, ni stock por acabarse en 7 días, ni exceso detenido detectado.</p>';
+      }
+      function renderTickets(agg){
+        var max=Math.max.apply(null, agg.ticketBuckets.map(function(b){return b.count;}).concat([1]));
+        document.getElementById("ticketChart").innerHTML=agg.ticketBuckets.map(function(b){return '<div class="bar-row"><span class="nm">'+b.label+'</span><span class="vl">'+b.count+' ventas</span><span class="bar-track"><span class="bar-fill alt" style="width:'+Math.max(2,b.count/max*100)+'%"></span></span></div>';}).join("");
+        var big=agg.ticketBuckets[4].count||0;
+        document.getElementById("ticketNote").textContent= agg.sales.length? (big+" de "+agg.sales.length+" ventas superaron los $1,000. Ticket promedio: "+fmtMoney(agg.ticket)+"."):"";
       }
 
       function renderKpis(agg){
@@ -784,6 +1024,10 @@
         var card = document.getElementById("clientsCard");
         if(!agg.clients.length){ card.hidden = true; return; }
         card.hidden = false;
+        var topC = agg.clients.slice(0,8);
+        var maxC = Math.max.apply(null, topC.map(function(c){return c.total;}).concat([1]));
+        var tc = document.getElementById("topClientsChart");
+        if(tc) tc.innerHTML = '<h3>Top clientes por dinero</h3>' + topC.map(function(c){ return '<div class="bar-row"><span class="nm">'+esc(c.name)+'</span><span class="vl">'+fmtMoney(c.total)+'</span><span class="bar-track"><span class="bar-fill" style="width:'+Math.max(2,c.total/maxC*100)+'%"></span></span></div>'; }).join("");
         var rows = agg.clients.slice(0, 20);
         var head = "<thead><tr><th>Cliente</th><th class='num'>Compras</th><th class='num'>Total comprado</th><th class='num'>Ticket prom.</th><th>Última compra</th></tr></thead>";
         var body = rows.map(function(c){
@@ -1004,10 +1248,10 @@
       document.getElementById("btnCsv").addEventListener("click", function(){
         if(!state.lastAgg) return;
         var rows = sortedProducts(state.lastAgg);
-        var lines = ["Producto;Piezas vendidas;Vendido $;Ganancia $;Margen %;Veces vendido;Rotación (pz/día);Clasificación;Stock actual;Días de stock;Última venta"];
+        var lines = ["Producto;Clase ABC;Piezas vendidas;Vendido $;Ganancia $;Margen %;Veces vendido;Rotación (pz/día);Clasificación;Stock actual;Días de stock;Última venta"];
         rows.forEach(function(p){
           function q(v){ v = String(v == null ? "" : v); return /[;"\n]/.test(v) ? '"' + v.replace(/"/g,'""') + '"' : v; }
-          lines.push([q(p.name), p.piezas, Math.round(p.ingreso * 100) / 100,
+          lines.push([q(p.name), p.abc || "", p.piezas, Math.round(p.ingreso * 100) / 100,
             p.costKnown ? Math.round(p.ganancia * 100) / 100 : "",
             p.margen != null ? Math.round(p.margen * 10) / 10 : "",
             p.veces, Math.round(p.rotacion * 100) / 100,
@@ -1028,11 +1272,15 @@
         var agg = state.lastAgg;
         var top = agg.products.slice().sort(function(a,b){ return b.piezas - a.piezas; }).filter(function(p){ return p.piezas > 0; }).slice(0,3);
         var slow = agg.products.filter(function(p){ return p.clase === "baja" || p.clase === "cero"; }).slice(0,3);
-        var txt = "Análisis de ventas DIGAR\n" +
+        var paretoN = agg.pareto.findIndex(function(p){return p.cumPct>=80;}); paretoN = paretoN>=0?paretoN+1:agg.pareto.length;
+        var txt = "Análisis de ventas DIGAR — Resumen profesional\n" +
           "Periodo: " + (state.minDate ? fmtFecha(state.from || state.minDate) + " al " + fmtFecha(state.to || state.maxDate) : "sin fechas") + "\n" +
-          "Ventas totales: " + fmtMoney(agg.totalVentas) + " en " + agg.sales.length + " ventas\n" +
-          (agg.profit != null ? "Ganancia: " + fmtMoney(agg.profit) + "\n" : "") +
-          "Ticket promedio: " + fmtMoney(agg.ticket) + "\n" +
+          "Ventas totales: " + fmtMoney(agg.totalVentas) + " en " + agg.sales.length + " ventas · " + fmtNum(agg.piezas) + " piezas\n" +
+          (agg.profit != null ? "Ganancia: " + fmtMoney(agg.profit) + " (" + fmtPct(agg.totalVentas?agg.profit/agg.totalVentas*100:0) + ")\n" : "") +
+          "Ticket promedio: " + fmtMoney(agg.ticket) + " · Venta por día: " + fmtMoney(agg.totalVentas/agg.dias) + "\n" +
+          "Tendencia (2ª mitad vs 1ª): " + pctChange(agg.growth) + "\n" +
+          "Pareto: " + paretoN + " productos generan el 80% de los ingresos\n" +
+          "Clase A: " + agg.countsABC.A + " productos · B: " + agg.countsABC.B + " · C: " + agg.countsABC.C + "\n" +
           "Más vendidos: " + top.map(function(p){ return p.name + " (" + fmtNum(p.piezas) + " pz)"; }).join(", ") + "\n" +
           (slow.length ? "Se mueven poco: " + slow.map(function(p){ return p.name; }).join(", ") : "");
         function done(){ var b = document.getElementById("btnCopy"); var old = b.textContent; b.textContent = "¡Copiado!"; setTimeout(function(){ b.textContent = old; }, 2000); }

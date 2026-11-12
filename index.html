@@ -1,0 +1,1051 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" href="data:," />
+    <title>Análisis de ventas DIGAR</title>
+    <style>
+      button, [role="button"], select, summary, input:not([type="checkbox"], [type="radio"]) { min-height: 2.75rem; }
+      * { box-sizing: border-box; }
+      :root{
+        --bg:#f3f5f2; --surface:#ffffff; --surface2:#ebefe9; --ink:#182119; --muted:#5a6a5e;
+        --line:#d7ded4; --accent:#0b6e4f; --accent-strong:#08573e; --accent-ink:#ffffff;
+        --gold:#c07f13; --gold-bg:#fbf0da; --red:#b3261e; --red-bg:#fbeae8;
+        --green-bg:#e3f2e9; --bar:#0b6e4f; --bar-soft:#9fc9b8; --chip:#eef2ec;
+        --shadow:0 1px 2px rgba(20,35,25,.06),0 6px 18px rgba(20,35,25,.05);
+      }
+      @media (prefers-color-scheme: dark){
+        :root{
+          --bg:#10140f; --surface:#1a201a; --surface2:#232a23; --ink:#e9eee7; --muted:#a3b3a4;
+          --line:#313b31; --accent:#35b183; --accent-strong:#35b183; --accent-ink:#0a140f;
+          --gold:#e0a83e; --gold-bg:#33270f; --red:#f0827a; --red-bg:#3a1713;
+          --green-bg:#14301f; --bar:#35b183; --bar-soft:#2c5c47; --chip:#232a23;
+          --shadow:0 1px 2px rgba(0,0,0,.35),0 6px 18px rgba(0,0,0,.25);
+        }
+      }
+      html{ -webkit-text-size-adjust:100%; }
+      body{
+        margin:0; background:var(--bg); color:var(--ink);
+        font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+        line-height:1.45; font-size:16px;
+      }
+      .wrap{ max-width:1080px; margin:0 auto; padding:20px 16px 56px; }
+      h1{ font-size:1.75rem; line-height:1.15; margin:0 0 6px; letter-spacing:-.02em; font-weight:800; }
+      h2{ font-size:1.2rem; margin:0 0 4px; letter-spacing:-.01em; font-weight:750; }
+      h3{ font-size:1rem; margin:0 0 8px; font-weight:700; }
+      .sub{ color:var(--muted); margin:0 0 20px; max-width:60ch; }
+      .card{ background:var(--surface); border:1px solid var(--line); border-radius:14px; box-shadow:var(--shadow); padding:18px; margin-bottom:16px; }
+      .card p.hint{ color:var(--muted); margin:0 0 12px; font-size:.92rem; }
+
+      /* ---------- Carga de archivo ---------- */
+      .drop{
+        border:2px dashed var(--accent); border-radius:14px; background:var(--surface);
+        padding:26px 18px; text-align:center; box-shadow:var(--shadow);
+      }
+      .drop.drag{ background:var(--green-bg); }
+      .drop .big{ font-size:1.1rem; font-weight:700; margin:0 0 4px; }
+      .drop .small{ color:var(--muted); margin:0 0 16px; font-size:.93rem; }
+      .btn{
+        appearance:none; border:1px solid var(--accent); background:var(--accent); color:var(--accent-ink);
+        font:inherit; font-weight:700; border-radius:10px; padding:10px 18px; cursor:pointer; min-height:44px;
+      }
+      .btn:active{ transform:translateY(1px); }
+      .btn.ghost{ background:transparent; color:var(--accent-strong); border-color:var(--line); }
+      @media (prefers-color-scheme: dark){ .btn.ghost{ color:var(--accent); } }
+      .btn.small{ min-height:38px; padding:6px 12px; font-size:.9rem; }
+      .drop .row{ display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
+      .pastebox{ margin-top:14px; text-align:left; }
+      .pastebox textarea{
+        width:100%; min-height:110px; border:1px solid var(--line); border-radius:10px; padding:10px;
+        background:var(--surface); color:var(--ink); font:inherit; font-size:.85rem;
+      }
+      .err{
+        display:none; margin-top:14px; background:var(--red-bg); color:var(--red); border:1px solid var(--red);
+        border-radius:10px; padding:12px 14px; font-size:.93rem; text-align:left; white-space:pre-line;
+      }
+      .steps{ display:grid; gap:10px; margin-top:16px; }
+      @media (min-width:720px){ .steps{ grid-template-columns:repeat(3,1fr); } }
+      .step{ background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:14px; }
+      .step b{ display:block; margin-bottom:2px; }
+      .step span{ color:var(--muted); font-size:.92rem; }
+      .step .n{
+        display:inline-flex; align-items:center; justify-content:center; width:26px; height:26px; border-radius:50%;
+        background:var(--accent); color:var(--accent-ink); font-weight:800; font-size:.9rem; margin-bottom:8px;
+      }
+
+      /* ---------- Barra de archivo / filtros ---------- */
+      .filebar{
+        display:flex; flex-wrap:wrap; gap:8px 14px; align-items:center; justify-content:space-between;
+        background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:12px 14px; margin-bottom:14px;
+      }
+      .filebar .meta{ font-size:.93rem; }
+      .filebar .meta b{ font-weight:750; }
+      .filebar .meta span{ color:var(--muted); }
+      .banner{
+        border-radius:12px; padding:12px 14px; margin-bottom:14px; font-size:.95rem; border:1px solid;
+      }
+      .banner.demo{ background:var(--gold-bg); border-color:var(--gold); color:var(--ink); }
+      .banner.warn{ background:var(--gold-bg); border-color:var(--gold); color:var(--ink); }
+      .filters{
+        display:flex; flex-wrap:wrap; gap:10px; align-items:flex-end; background:var(--surface);
+        border:1px solid var(--line); border-radius:12px; padding:12px 14px; margin-bottom:16px;
+      }
+      .filters .group{ display:flex; flex-direction:column; gap:4px; }
+      .filters label{ font-size:.8rem; font-weight:700; color:var(--muted); }
+      .filters input[type="date"], .filters select{
+        border:1px solid var(--line); border-radius:9px; padding:8px 10px; background:var(--surface); color:var(--ink); font:inherit;
+      }
+      .chips{ display:flex; gap:8px; flex-wrap:wrap; }
+      .chip{
+        border:1px solid var(--line); background:var(--chip); color:var(--ink); border-radius:999px;
+        padding:8px 14px; font:inherit; font-size:.9rem; font-weight:650; cursor:pointer; min-height:40px;
+      }
+      .chip.on{ background:var(--accent); border-color:var(--accent); color:var(--accent-ink); }
+
+      /* ---------- KPIs ---------- */
+      .kpis{ display:grid; grid-template-columns:repeat(2,1fr); gap:12px; margin-bottom:16px; }
+      @media (min-width:720px){ .kpis{ grid-template-columns:repeat(3,1fr); } }
+      @media (min-width:1020px){ .kpis{ grid-template-columns:repeat(6,1fr); } }
+      .kpi{ background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:14px; box-shadow:var(--shadow); }
+      .kpi .lbl{ font-size:.78rem; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.04em; }
+      .kpi .val{ font-size:1.45rem; font-weight:800; letter-spacing:-.02em; margin-top:2px; font-variant-numeric:tabular-nums; }
+      .kpi .note{ font-size:.82rem; color:var(--muted); margin-top:2px; }
+      .kpi .note.good{ color:var(--accent-strong); font-weight:650; }
+      @media (prefers-color-scheme: dark){ .kpi .note.good{ color:var(--accent); } }
+
+      /* ---------- Gráficas ---------- */
+      .chartbox{ overflow-x:hidden; }
+      .chartbox svg{ width:100%; height:auto; display:block; }
+      .topgrid{ display:grid; gap:18px; }
+      @media (min-width:820px){ .topgrid{ grid-template-columns:1fr 1fr; } }
+      .bar-row{ display:grid; grid-template-columns:1fr auto; gap:2px 10px; padding:7px 0; border-bottom:1px solid var(--line); }
+      .bar-row:last-child{ border-bottom:none; }
+      .bar-row .nm{ font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+      .bar-row .vl{ font-variant-numeric:tabular-nums; font-weight:700; text-align:right; }
+      .bar-track{ grid-column:1 / -1; height:8px; background:var(--surface2); border-radius:99px; overflow:hidden; }
+      .bar-fill{ height:100%; background:var(--bar); border-radius:99px; }
+      .bar-fill.alt{ background:var(--gold); }
+
+      /* ---------- Tablas ---------- */
+      .tools{ display:flex; flex-wrap:wrap; gap:10px; margin-bottom:12px; }
+      .tools input[type="search"], .tools select{
+        border:1px solid var(--line); border-radius:9px; padding:8px 12px; background:var(--surface); color:var(--ink); font:inherit;
+      }
+      .tools input[type="search"]{ flex:1 1 200px; }
+      table{ width:100%; border-collapse:collapse; font-size:.94rem; }
+      th, td{ padding:9px 8px; text-align:left; border-bottom:1px solid var(--line); vertical-align:top; }
+      th{ font-size:.78rem; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); }
+      th.sortable{ cursor:pointer; }
+      td.num, th.num{ text-align:right; font-variant-numeric:tabular-nums; }
+      tbody tr:last-child td{ border-bottom:none; }
+      .badge{
+        display:inline-block; padding:2px 9px; border-radius:999px; font-size:.78rem; font-weight:700; white-space:nowrap;
+      }
+      .badge.alta{ background:var(--green-bg); color:var(--accent-strong); }
+      @media (prefers-color-scheme: dark){ .badge.alta{ color:var(--accent); } }
+      .badge.media{ background:var(--gold-bg); color:var(--gold); }
+      .badge.baja{ background:var(--red-bg); color:var(--red); }
+      .badge.cero{ background:var(--surface2); color:var(--muted); }
+      .muted{ color:var(--muted); }
+      .small{ font-size:.85rem; }
+      @media (max-width:680px){
+        table.resp thead{ display:none; }
+        table.resp, table.resp tbody, table.resp tr, table.resp td{ display:block; width:100%; }
+        table.resp tr{ border:1px solid var(--line); border-radius:12px; padding:8px 12px; margin-bottom:10px; background:var(--surface); }
+        table.resp td{ border-bottom:none; padding:5px 0; display:flex; justify-content:space-between; gap:14px; }
+        table.resp td::before{ content:attr(data-label); font-weight:700; color:var(--muted); font-size:.82rem; }
+        table.resp td.num{ text-align:right; }
+        table.resp td.head-cell{ display:block; font-size:1.02rem; font-weight:750; }
+        table.resp td.head-cell::before{ content:""; }
+      }
+
+      /* ---------- Lentos / ventas recientes ---------- */
+      .slow{ display:grid; gap:10px; }
+      @media (min-width:720px){ .slow{ grid-template-columns:1fr 1fr; } }
+      .slow-item{ border:1px solid var(--line); border-radius:12px; padding:12px 14px; display:flex; justify-content:space-between; gap:12px; align-items:flex-start; }
+      .slow-item .nm{ font-weight:700; }
+      .slow-item .dt{ color:var(--muted); font-size:.88rem; }
+      .slow-item .pz{ text-align:right; font-variant-numeric:tabular-nums; }
+      details.sale{ border:1px solid var(--line); border-radius:12px; margin-bottom:8px; background:var(--surface); }
+      details.sale summary{
+        cursor:pointer; padding:10px 14px; display:flex; justify-content:space-between; gap:12px; align-items:center; list-style:none;
+      }
+      details.sale summary::-webkit-details-marker{ display:none; }
+      details.sale .items{ padding:2px 14px 12px; }
+      details.sale .items div{ display:flex; justify-content:space-between; gap:12px; padding:4px 0; border-top:1px solid var(--line); font-size:.92rem; }
+      .actions{ display:flex; flex-wrap:wrap; gap:10px; margin:4px 0 16px; }
+      .foot{ color:var(--muted); font-size:.85rem; margin-top:8px; }
+      [hidden]{ display:none !important; }
+    </style>
+  </head>
+  <body>
+    <main class="wrap">
+      <h1>Análisis de ventas DIGAR</h1>
+      <p class="sub">Carga el archivo de respaldo que guarda tu DIGAR POS y mira todo junto: qué se vende, cuánto, qué casi no se mueve, la rotación de cada producto y la ganancia.</p>
+
+      <!-- ============ CARGA ============ -->
+      <section id="carga">
+        <div class="drop" id="drop">
+          <p class="big">Suelta aquí tu archivo de respaldo</p>
+          <p class="small">El archivo .json (o .txt) que exportas desde DIGAR POS. Se lee aquí mismo en tu teléfono.</p>
+          <div class="row">
+            <button class="btn" id="btnFile" type="button">Elegir archivo</button>
+            <button class="btn ghost" id="btnPaste" type="button">Pegar el contenido</button>
+            <button class="btn ghost" id="btnDemo" type="button">Ver con datos de ejemplo</button>
+          </div>
+          <input type="file" id="fileInput" accept=".json,.txt,application/json,text/plain" hidden />
+          <div class="pastebox" id="pasteBox" hidden>
+            <label for="pasteArea"><b>Pega aquí el contenido del respaldo</b></label>
+            <textarea id="pasteArea" placeholder='{"ventas": [ ... ], "productos": [ ... ]}'></textarea>
+            <div class="row" style="justify-content:flex-start;margin-top:10px">
+              <button class="btn" id="btnAnalyzePaste" type="button">Analizar</button>
+            </div>
+          </div>
+          <div class="err" id="errBox" role="alert"></div>
+        </div>
+
+        <div class="steps">
+          <div class="step"><span class="n">1</span><b>Exporta tu respaldo</b><span>En DIGAR POS, genera el archivo de respaldo de tus datos, como cuando lo guardas de seguridad.</span></div>
+          <div class="step"><span class="n">2</span><b>Súbelo aquí</b><span>Toca «Elegir archivo» y busca ese respaldo en tu teléfono.</span></div>
+          <div class="step"><span class="n">3</span><b>Revisa tus números</b><span>Productos más vendidos, los que se mueven poco, rotación por día y ganancia por producto.</span></div>
+        </div>
+      </section>
+
+      <!-- ============ RESULTADOS ============ -->
+      <div id="app" hidden>
+        <div class="banner demo" id="demoBanner" hidden>Estás viendo <b>datos de ejemplo</b>, no los de tu negocio. Carga tu respaldo de DIGAR POS para ver tus números reales.</div>
+        <div class="banner warn" id="costBanner" hidden></div>
+
+        <div class="filebar">
+          <div class="meta" id="fileMeta"></div>
+          <button class="btn ghost small" id="btnReset" type="button">Cargar otro archivo</button>
+        </div>
+
+        <div class="filters" aria-label="Filtros de fechas">
+          <div class="group">
+            <label>Rango rápido</label>
+            <div class="chips">
+              <button class="chip on" type="button" data-preset="todo">Todo</button>
+              <button class="chip" type="button" data-preset="7">Últimos 7 días</button>
+              <button class="chip" type="button" data-preset="30">Últimos 30 días</button>
+              <button class="chip" type="button" data-preset="mes">Este mes</button>
+            </div>
+          </div>
+          <div class="group">
+            <label for="dateFrom">Desde</label>
+            <input type="date" id="dateFrom" />
+          </div>
+          <div class="group">
+            <label for="dateTo">Hasta</label>
+            <input type="date" id="dateTo" />
+          </div>
+        </div>
+
+        <section class="kpis" id="kpis" aria-label="Resumen"></section>
+
+        <section class="card chartbox">
+          <h2 id="chartTitle">Ventas por día</h2>
+          <p class="hint" id="chartHint"></p>
+          <div id="chart"></div>
+        </section>
+
+        <section class="card">
+          <div class="topgrid">
+            <div>
+              <h3>Top 10 por piezas vendidas</h3>
+              <div id="topQty"></div>
+            </div>
+            <div>
+              <h3>Top 10 por dinero vendido</h3>
+              <div id="topMoney"></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="card">
+          <h2>Todos los productos</h2>
+          <p class="hint">Rotación = piezas que se venden por día en el periodo. «Días de stock» estima cuánto te dura lo que tienes, al ritmo que se vende.</p>
+          <div class="tools">
+            <input type="search" id="prodSearch" placeholder="Buscar producto…" aria-label="Buscar producto" />
+            <select id="prodSort" aria-label="Ordenar productos">
+              <option value="piezas">Más vendidos (piezas)</option>
+              <option value="ingreso">Más dinero vendido</option>
+              <option value="ganancia">Más ganancia</option>
+              <option value="rotacion">Mayor rotación</option>
+              <option value="lento">Menor rotación</option>
+              <option value="nombre">Nombre (A–Z)</option>
+            </select>
+          </div>
+          <div id="prodTable"></div>
+        </section>
+
+        <section class="card">
+          <h2>Productos que se mueven poco</h2>
+          <p class="hint" id="slowHint">Los de rotación baja o sin ventas en el periodo, para que decidas si los empujas, los cambias de lugar o dejas de comprarlos.</p>
+          <div class="slow" id="slowList"></div>
+        </section>
+
+        <section class="card" id="clientsCard" hidden>
+          <h2>Clientes que más compran</h2>
+          <p class="hint">Según las ventas del periodo.</p>
+          <div id="clientsTable"></div>
+        </section>
+
+        <section class="card">
+          <h2>Ventas recientes</h2>
+          <p class="hint">Toca una venta para ver sus productos.</p>
+          <div id="recentSales"></div>
+        </section>
+
+        <div class="actions">
+          <button class="btn" id="btnCsv" type="button">Descargar resumen de productos (CSV)</button>
+          <button class="btn ghost" id="btnCopy" type="button">Copiar resumen</button>
+        </div>
+        <p class="foot" id="footNote"></p>
+      </div>
+    </main>
+
+    <script>
+      "use strict";
+      /* ================= Utilidades ================= */
+      function esc(s){ return String(s == null ? "" : s).replace(/[&<>"']/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]; }); }
+      function norm(s){ return String(s == null ? "" : s).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]/g,""); }
+      var fmtMoneyFmt = new Intl.NumberFormat("es-MX",{style:"currency",currency:"MXN",maximumFractionDigits:0});
+      var fmtMoney2Fmt = new Intl.NumberFormat("es-MX",{style:"currency",currency:"MXN",minimumFractionDigits:2,maximumFractionDigits:2});
+      function fmtMoney(v){ if(v == null || isNaN(v)) return "—"; return (Math.round(v) === v ? fmtMoneyFmt : fmtMoney2Fmt).format(v); }
+      function fmtNum(v){ if(v == null || isNaN(v)) return "—"; return new Intl.NumberFormat("es-MX",{maximumFractionDigits:1}).format(v); }
+      function fmtPct(v){ if(v == null || isNaN(v)) return "—"; return (Math.round(v*10)/10).toLocaleString("es-MX") + " %"; }
+      function fmtFecha(d){
+        if(!d || isNaN(d.getTime())) return "—";
+        return d.toLocaleDateString("es-MX",{day:"numeric",month:"short",year:"numeric"});
+      }
+      function fmtFechaCorta(d){
+        if(!d || isNaN(d.getTime())) return "";
+        return d.toLocaleDateString("es-MX",{day:"numeric",month:"short"});
+      }
+      function toNum(v){
+        if(v == null) return null;
+        if(typeof v === "number") return isFinite(v) ? v : null;
+        var s = String(v).replace(/[$,\s]/g,"");
+        if(s === "") return null;
+        var n = parseFloat(s);
+        return isNaN(n) ? null : n;
+      }
+      function parseDate(v){
+        if(v == null || v === "") return null;
+        if(v instanceof Date) return isNaN(v.getTime()) ? null : v;
+        if(typeof v === "number"){
+          if(v > 1e12) return new Date(v);
+          if(v > 1e9) return new Date(v*1000);
+          return null;
+        }
+        var s = String(v).trim();
+        var d = null;
+        var m = s.match(/^(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})/);
+        if(m) d = new Date(+m[1], +m[2]-1, +m[3]);
+        if(!d){
+          m = s.match(/^(\d{1,2})[-\/](\d{1,2})[-\/](\d{4})/);
+          if(m) d = new Date(+m[3], +m[2]-1, +m[1]);
+        }
+        if(!d){
+          var t = Date.parse(s);
+          if(!isNaN(t)) d = new Date(t);
+        }
+        if(!d || isNaN(d.getTime())) return null;
+        var hm = s.match(/(\d{1,2}):(\d{2})/);
+        if(hm && d.getHours() === 0) d.setHours(+hm[1], +hm[2]);
+        return d;
+      }
+      function dayKey(d){ return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
+      function startOfDay(d){ var x = new Date(d); x.setHours(0,0,0,0); return x; }
+
+      /* Busca un campo por varios nombres posibles (sin importar acentos ni mayúsculas) */
+      function pick(obj, aliases){
+        if(!obj || typeof obj !== "object") return undefined;
+        var keys = Object.keys(obj);
+        var byNorm = {};
+        for(var i=0;i<keys.length;i++) byNorm[norm(keys[i])] = keys[i];
+        for(var j=0;j<aliases.length;j++){
+          var k = byNorm[norm(aliases[j])];
+          if(k !== undefined && obj[k] !== null && obj[k] !== undefined && obj[k] !== "") return obj[k];
+        }
+        return undefined;
+      }
+      function hasAny(obj, aliases){
+        if(!obj || typeof obj !== "object") return false;
+        var keys = Object.keys(obj), set = {};
+        for(var i=0;i<keys.length;i++) set[norm(keys[i])] = true;
+        for(var j=0;j<aliases.length;j++) if(set[norm(aliases[j])]) return true;
+        return false;
+      }
+
+      /* ================= Aliases de campos ================= */
+      var A = {
+        nombre:["nombre","name","producto","descripcion","description","articulo","title","nombreproducto"],
+        precio:["precio","price","precioventa","precio de venta","saleprice","pventa","preciounitario"],
+        costo:["costo","cost","preciocosto","precio costo","costprice","pcompra","preciocompra","preciodecosto"],
+        stock:["stock","existencia","existencias","inventario","inventory","cantidaddisponible","disponible","stockactual","cantidadenstock"],
+        id:["id","_id","codigo","code","sku","clave"],
+        categoria:["categoria","category","departamento"],
+        fecha:["fecha","date","fechaventa","createdat","created_at","timestamp","dia","fechahora","hora"],
+        total:["total","importe","monto","amount","totalventa","total venta","cobrado","ventatotal"],
+        cliente:["cliente","client","customer","clientenombre","nombrecliente","comprador"],
+        items:["items","productos","detalle","detalles","lineas","lines","articulos","ventaitems","products","partidas","conceptos"],
+        cantidad:["cantidad","qty","quantity","piezas","unidades","units","cant"],
+        subtotal:["subtotal","importe","total","amount","importelinea"],
+        ganancia:["ganancia","profit","utilidad","gananciatotal","margenpesos"],
+        estado:["estado","status","estatus"],
+        telefono:["telefono","phone","tel","celular","whatsapp"],
+        deuda:["deuda","saldo","debe","credito","adeudo","saldo pendiente","pendiente"]
+      };
+
+      /* ================= Localizar las listas dentro del respaldo ================= */
+      function collectArrays(root){
+        var found = [];
+        function walk(node, depth){
+          if(node == null || depth > 7) return;
+          if(typeof node === "string"){
+            var t = node.trim();
+            if((t.charAt(0) === "[" || t.charAt(0) === "{") && t.length > 1){
+              try{ walk(JSON.parse(t), depth+1); }catch(e){}
+            }
+            return;
+          }
+          if(Array.isArray(node)){
+            if(node.length && typeof node[0] === "object" && node[0] !== null) found.push(node);
+            return; /* no bajar: los renglones ya son registros */
+          }
+          if(typeof node === "object"){
+            var vals = Object.keys(node).map(function(k){ return node[k]; });
+            var allObj = vals.length > 1 && vals.every(function(v){ return v && typeof v === "object" && !Array.isArray(v); });
+            if(allObj){ found.push(vals); return; } /* mapa id -> registro */
+            Object.keys(node).forEach(function(k){ walk(node[k], depth+1); });
+          }
+        }
+        walk(root, 0);
+        return found;
+      }
+      function isSaleLike(o){
+        if(!o || typeof o !== "object") return false;
+        var hasFecha = hasAny(o, A.fecha);
+        var hasItems = hasAny(o, A.items);
+        var hasTotal = hasAny(o, A.total);
+        var single = hasAny(o, A.nombre) && hasAny(o, A.cantidad);
+        return (hasFecha && (hasItems || hasTotal)) || (hasItems && hasTotal) || (hasFecha && single);
+      }
+      function isProductLike(o){
+        if(!o || typeof o !== "object") return false;
+        if(hasAny(o, A.items)) return false;
+        if(hasAny(o, A.fecha) && hasAny(o, A.total)) return false;
+        return hasAny(o, A.nombre) && (hasAny(o, A.stock) || hasAny(o, A.costo) || hasAny(o, A.precio));
+      }
+      function isClientLike(o){
+        if(!o || typeof o !== "object") return false;
+        if(hasAny(o, A.precio) || hasAny(o, A.items)) return false;
+        return hasAny(o, ["nombre","name","cliente"]) && (hasAny(o, A.telefono) || hasAny(o, A.deuda) || hasAny(o, ["direccion","address","ruta"]));
+      }
+      function bestArray(arrays, test){
+        var best = null, bestScore = 0;
+        arrays.forEach(function(arr){
+          var score = 0;
+          arr.forEach(function(o){ if(test(o)) score++; });
+          if(score > bestScore && score >= Math.ceil(arr.length/2)){ best = arr; bestScore = score; }
+        });
+        return best || [];
+      }
+
+      /* ================= Normalización ================= */
+      function normalizeProducts(raw){
+        return raw.map(function(o){
+          return {
+            id: pick(o, A.id),
+            name: String(pick(o, A.nombre) || "Producto sin nombre"),
+            price: toNum(pick(o, A.precio)),
+            cost: toNum(pick(o, A.costo)),
+            stock: toNum(pick(o, A.stock)),
+            category: pick(o, A.categoria) || ""
+          };
+        }).filter(function(p){ return p.name; });
+      }
+      function normalizeClients(raw){
+        return raw.map(function(o){
+          return {
+            name: String(pick(o, ["nombre","name","cliente"]) || "Cliente"),
+            phone: pick(o, A.telefono) || "",
+            debt: toNum(pick(o, A.deuda))
+          };
+        });
+      }
+      function catalogLookup(products){
+        var byId = {}, byName = {};
+        products.forEach(function(p){
+          if(p.id != null) byId[String(p.id)] = p;
+          byName[norm(p.name)] = p;
+        });
+        return { byId: byId, byName: byName };
+      }
+      function normalizeSales(raw, catalog){
+        var sales = [];
+        raw.forEach(function(o){
+          if(!o || typeof o !== "object") return;
+          var estado = norm(pick(o, A.estado) || "");
+          if(estado.indexOf("cancel") === 0 || estado.indexOf("anul") === 0) return;
+          var itemsRaw = pick(o, A.items);
+          var items = [];
+          if(Array.isArray(itemsRaw)){
+            itemsRaw.forEach(function(it){
+              if(!it || typeof it !== "object") return;
+              var name = String(pick(it, A.nombre) || pick(it, ["productoNombre"]) || "Producto");
+              var pid = pick(it, ["productoId","productid","id"].concat(A.id));
+              var cat = (pid != null && catalog.byId[String(pid)]) || catalog.byName[norm(name)] || null;
+              var qty = toNum(pick(it, A.cantidad)); if(qty == null) qty = 1;
+              var price = toNum(pick(it, ["precio","price","precioUnitario","preciounitario","unitprice"]));
+              if(price == null && cat) price = cat.price;
+              var cost = toNum(pick(it, A.costo));
+              if(cost == null && cat) cost = cat.cost;
+              var sub = toNum(pick(it, A.subtotal));
+              if(sub == null && price != null) sub = price * qty;
+              if(price == null && sub != null && qty) price = sub / qty;
+              items.push({ name: name, qty: qty, price: price, cost: cost, subtotal: sub });
+            });
+          }
+          if(!items.length && hasAny(o, A.nombre) && hasAny(o, A.cantidad)){
+            var name0 = String(pick(o, A.nombre));
+            var cat0 = catalog.byName[norm(name0)] || null;
+            var qty0 = toNum(pick(o, A.cantidad)) || 1;
+            var price0 = toNum(pick(o, A.precio)); if(price0 == null && cat0) price0 = cat0.price;
+            var cost0 = toNum(pick(o, A.costo)); if(cost0 == null && cat0) cost0 = cat0.cost;
+            var sub0 = toNum(pick(o, A.total)); if(sub0 == null && price0 != null) sub0 = price0 * qty0;
+            items.push({ name: name0, qty: qty0, price: price0, cost: cost0, subtotal: sub0 });
+          }
+          var total = toNum(pick(o, A.total));
+          if(total == null){ total = items.reduce(function(s,it){ return s + (it.subtotal || 0); }, 0); }
+          var profitFile = toNum(pick(o, A.ganancia));
+          var profit = null;
+          if(profitFile != null) profit = profitFile;
+          else {
+            var anyCost = items.some(function(it){ return it.cost != null && it.price != null; });
+            if(anyCost) profit = items.reduce(function(s,it){
+              return (it.cost != null && it.price != null) ? s + (it.price - it.cost) * it.qty : s;
+            }, 0);
+          }
+          var cliente = pick(o, A.cliente);
+          if(cliente && typeof cliente === "object") cliente = pick(cliente, ["nombre","name"]) || "";
+          sales.push({
+            date: parseDate(pick(o, A.fecha)),
+            total: total || 0,
+            client: cliente ? String(cliente) : "",
+            items: items,
+            profit: profit
+          });
+        });
+        return sales;
+      }
+
+      /* ================= Estado y análisis ================= */
+      var state = {
+        fileName: "", sales: [], products: [], clients: [], demo: false,
+        hasCost: false, minDate: null, maxDate: null, dateless: 0,
+        from: null, to: null, query: "", sort: "piezas", lastAgg: null
+      };
+
+      function inRange(sale){
+        if(!sale.date) return state.from == null && state.to == null;
+        var d = startOfDay(sale.date);
+        if(state.from && d < state.from) return false;
+        if(state.to && d > state.to) return false;
+        return true;
+      }
+
+      function aggregate(){
+        var sales = state.sales.filter(inRange);
+        var dias = 1;
+        if(state.from && state.to) dias = Math.max(1, Math.round((state.to - state.from) / 86400000) + 1);
+        else if(state.minDate && state.maxDate) dias = Math.max(1, Math.round((startOfDay(state.maxDate) - startOfDay(state.minDate)) / 86400000) + 1);
+
+        var totalVentas = 0, totalProfit = 0, profitKnown = 0, piezas = 0;
+        var daily = {}, prodAgg = {}, clientAgg = {};
+        sales.forEach(function(s){
+          totalVentas += s.total;
+          if(s.profit != null){ totalProfit += s.profit; profitKnown++; }
+          if(s.date){
+            var k = dayKey(s.date);
+            if(!daily[k]) daily[k] = { date: startOfDay(s.date), total: 0, count: 0 };
+            daily[k].total += s.total; daily[k].count++;
+          }
+          var seenInSale = {};
+          s.items.forEach(function(it){
+            piezas += it.qty;
+            var key = norm(it.name);
+            if(!prodAgg[key]) prodAgg[key] = { name: it.name, piezas: 0, ingreso: 0, ganancia: 0, costKnown: false, veces: 0, ultima: null };
+            var p = prodAgg[key];
+            p.piezas += it.qty;
+            p.ingreso += (it.subtotal != null ? it.subtotal : (it.price || 0) * it.qty);
+            if(it.cost != null && it.price != null){ p.ganancia += (it.price - it.cost) * it.qty; p.costKnown = true; }
+            if(!seenInSale[key]){ p.veces++; seenInSale[key] = true; }
+            if(s.date && (!p.ultima || s.date > p.ultima)) p.ultima = s.date;
+          });
+          var cname = s.client && s.client.trim() ? s.client.trim() : null;
+          if(cname){
+            var ck = norm(cname);
+            if(!clientAgg[ck]) clientAgg[ck] = { name: cname, total: 0, compras: 0, ultima: null };
+            clientAgg[ck].total += s.total; clientAgg[ck].compras++;
+            if(s.date && (!clientAgg[ck].ultima || s.date > clientAgg[ck].ultima)) clientAgg[ck].ultima = s.date;
+          }
+        });
+
+        /* Unir con el catálogo: productos que nunca se vendieron también cuentan */
+        var rows = {};
+        Object.keys(prodAgg).forEach(function(k){ rows[k] = Object.assign({}, prodAgg[k]); });
+        state.products.forEach(function(cp){
+          var k = norm(cp.name);
+          if(!rows[k]) rows[k] = { name: cp.name, piezas: 0, ingreso: 0, ganancia: 0, costKnown: false, veces: 0, ultima: null };
+          rows[k].stock = cp.stock; rows[k].price = cp.price; rows[k].cost = cp.cost;
+        });
+        Object.keys(prodAgg).forEach(function(k){
+          if(rows[k].stock === undefined){
+            var cp = null;
+            for(var i=0;i<state.products.length;i++) if(norm(state.products[i].name) === k){ cp = state.products[i]; break; }
+            if(cp){ rows[k].stock = cp.stock; rows[k].price = cp.price; rows[k].cost = cp.cost; }
+          }
+        });
+        var productRows = Object.keys(rows).map(function(k){
+          var r = rows[k];
+          r.rotacion = r.piezas / dias;
+          r.margen = r.costKnown && r.ingreso > 0 ? (r.ganancia / r.ingreso) * 100 : null;
+          r.diasStock = (r.stock != null && r.rotacion > 0) ? r.stock / r.rotacion : null;
+          r.clase = r.piezas === 0 ? "cero" : (r.rotacion >= 2 ? "alta" : (r.rotacion >= 0.5 ? "media" : "baja"));
+          return r;
+        });
+
+        var dailyArr = Object.keys(daily).map(function(k){ return daily[k]; }).sort(function(a,b){ return a.date - b.date; });
+        var clients = Object.keys(clientAgg).map(function(k){ return clientAgg[k]; }).sort(function(a,b){ return b.total - a.total; });
+
+        return {
+          sales: sales, dias: dias, totalVentas: totalVentas,
+          profit: profitKnown ? totalProfit : null, profitKnown: profitKnown,
+          piezas: piezas, ticket: sales.length ? totalVentas / sales.length : 0,
+          daily: dailyArr, products: productRows, clients: clients
+        };
+      }
+
+      function claseBadge(clase){
+        if(clase === "alta") return '<span class="badge alta">Rotación alta</span>';
+        if(clase === "media") return '<span class="badge media">Rotación media</span>';
+        if(clase === "baja") return '<span class="badge baja">Rotación baja</span>';
+        return '<span class="badge cero">Sin ventas</span>';
+      }
+
+      /* ================= Render ================= */
+      function render(){
+        var agg = aggregate();
+        state.lastAgg = agg;
+        renderKpis(agg);
+        renderChart(agg);
+        renderTops(agg);
+        renderProducts(agg);
+        renderSlow(agg);
+        renderClients(agg);
+        renderRecent(agg);
+      }
+
+      function renderKpis(agg){
+        var margen = agg.profit != null && agg.totalVentas > 0 ? (agg.profit / agg.totalVentas) * 100 : null;
+        var porDia = agg.totalVentas / agg.dias;
+        var cards = [
+          { lbl: "Ventas totales", val: fmtMoney(agg.totalVentas), note: agg.dias + (agg.dias === 1 ? " día" : " días") + " en el periodo" },
+          { lbl: "Ganancia", val: agg.profit != null ? fmtMoney(agg.profit) : "Sin datos", note: margen != null ? ("Margen de " + fmtPct(margen)) : "El archivo no trae costos", good: margen != null },
+          { lbl: "Nº de ventas", val: fmtNum(agg.sales.length), note: fmtNum(agg.piezas) + " piezas vendidas" },
+          { lbl: "Ticket promedio", val: fmtMoney(agg.ticket), note: "Por cada venta" },
+          { lbl: "Venta por día", val: fmtMoney(porDia), note: "Promedio del periodo" },
+          { lbl: "Productos activos", val: fmtNum(agg.products.filter(function(p){ return p.piezas > 0; }).length), note: "De " + fmtNum(agg.products.length) + " en el catálogo" }
+        ];
+        document.getElementById("kpis").innerHTML = cards.map(function(c){
+          return '<div class="kpi"><div class="lbl">' + esc(c.lbl) + '</div><div class="val">' + esc(c.val) + '</div><div class="note' + (c.good ? " good" : "") + '">' + esc(c.note) + "</div></div>";
+        }).join("");
+      }
+
+      function renderChart(agg){
+        var box = document.getElementById("chart");
+        var title = document.getElementById("chartTitle");
+        var hint = document.getElementById("chartHint");
+        if(!agg.daily.length){ box.innerHTML = '<p class="muted">Las ventas de este archivo no traen fechas, así que no se puede graficar por día.</p>'; hint.textContent = ""; return; }
+        var data = agg.daily.slice();
+        var weekly = false;
+        if(data.length > 62){
+          weekly = true;
+          var wk = {};
+          data.forEach(function(d){
+            var monday = startOfDay(d.date); var dow = (monday.getDay() + 6) % 7; monday.setDate(monday.getDate() - dow);
+            var k = dayKey(monday);
+            if(!wk[k]) wk[k] = { date: monday, total: 0, count: 0 };
+            wk[k].total += d.total; wk[k].count += d.count;
+          });
+          data = Object.keys(wk).map(function(k){ return wk[k]; }).sort(function(a,b){ return a.date - b.date; });
+        }
+        title.textContent = weekly ? "Ventas por semana" : "Ventas por día";
+        hint.textContent = weekly ? "Cada barra junta una semana (lunes a domingo)." : "Cada barra es un día con ventas.";
+        var max = Math.max.apply(null, data.map(function(d){ return d.total; }).concat([1]));
+        var W = 720, H = 210, base = 172, top = 14;
+        var slot = W / data.length;
+        var bw = Math.max(2, Math.min(38, slot * 0.68));
+        var parts = [];
+        parts.push('<line x1="0" y1="' + base + '" x2="' + W + '" y2="' + base + '" stroke="var(--line)" stroke-width="1"/>');
+        data.forEach(function(d, i){
+          var h = Math.max(2, (d.total / max) * (base - top));
+          var x = i * slot + (slot - bw) / 2;
+          var y = base - h;
+          parts.push('<rect x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + h.toFixed(1) + '" rx="3" fill="var(--bar)"><title>' + esc(fmtFecha(d.date) + ": " + fmtMoney(d.total) + " (" + d.count + " ventas)") + "</title></rect>");
+          if(data.length <= 20 || i === 0 || i === data.length - 1 || i === Math.floor(data.length / 2)){
+            parts.push('<text x="' + (i * slot + slot / 2).toFixed(1) + '" y="' + (base + 18) + '" text-anchor="middle" font-size="11" fill="var(--muted)">' + esc(fmtFechaCorta(d.date)) + "</text>");
+          }
+        });
+        parts.push('<text x="2" y="' + (top + 4) + '" font-size="11" fill="var(--muted)">Máximo: ' + esc(fmtMoney(max)) + "</text>");
+        box.innerHTML = '<svg viewBox="0 0 ' + W + " " + H + '" role="img" aria-label="Gráfica de ventas por ' + (weekly ? "semana" : "día") + '">' + parts.join("") + "</svg>";
+      }
+
+      function barList(elId, rows, valueFn, labelFn, alt){
+        var el = document.getElementById(elId);
+        if(!rows.length){ el.innerHTML = '<p class="muted">Sin datos en el periodo.</p>'; return; }
+        var max = Math.max.apply(null, rows.map(valueFn).concat([0.0001]));
+        el.innerHTML = rows.map(function(r){
+          var v = valueFn(r);
+          var pct = Math.max(2, (v / max) * 100);
+          return '<div class="bar-row"><span class="nm">' + esc(r.name) + '</span><span class="vl">' + esc(labelFn(r)) + '</span>' +
+            '<span class="bar-track"><span class="bar-fill' + (alt ? " alt" : "") + '" style="width:' + pct.toFixed(1) + '%"></span></span></div>';
+        }).join("");
+      }
+
+      function renderTops(agg){
+        var byQty = agg.products.slice().sort(function(a,b){ return b.piezas - a.piezas; }).filter(function(p){ return p.piezas > 0; }).slice(0,10);
+        var byMoney = agg.products.slice().sort(function(a,b){ return b.ingreso - a.ingreso; }).filter(function(p){ return p.ingreso > 0; }).slice(0,10);
+        barList("topQty", byQty, function(p){ return p.piezas; }, function(p){ return fmtNum(p.piezas) + " pz"; }, false);
+        barList("topMoney", byMoney, function(p){ return p.ingreso; }, function(p){ return fmtMoney(p.ingreso); }, true);
+      }
+
+      function sortedProducts(agg){
+        var rows = agg.products.slice();
+        var q = norm(state.query);
+        if(q) rows = rows.filter(function(p){ return norm(p.name).indexOf(q) >= 0; });
+        var key = state.sort;
+        rows.sort(function(a,b){
+          if(key === "nombre") return a.name.localeCompare(b.name, "es");
+          if(key === "lento") return a.rotacion - b.rotacion || a.piezas - b.piezas;
+          if(key === "ganancia") return (b.ganancia == null ? -1 : b.ganancia) - (a.ganancia == null ? -1 : a.ganancia);
+          return (b[key] || 0) - (a[key] || 0);
+        });
+        return rows;
+      }
+
+      function renderProducts(agg){
+        var rows = sortedProducts(agg);
+        var box = document.getElementById("prodTable");
+        if(!rows.length){ box.innerHTML = '<p class="muted">Ningún producto coincide con la búsqueda.</p>'; return; }
+        var showStock = state.products.some(function(p){ return p.stock != null; });
+        var head = "<thead><tr><th>Producto</th><th class='num'>Piezas</th><th class='num'>Vendido $</th><th class='num'>Ganancia</th><th class='num'>Margen</th><th>Rotación</th><th class='num'>Pz/día</th>" +
+          (showStock ? "<th class='num'>Stock</th><th class='num'>Días de stock</th>" : "") +
+          "<th>Última venta</th></tr></thead>";
+        var body = rows.map(function(p){
+          var tds = '<td class="head-cell">' + esc(p.name) + "</td>" +
+            '<td class="num" data-label="Piezas">' + fmtNum(p.piezas) + "</td>" +
+            '<td class="num" data-label="Vendido">' + fmtMoney(p.ingreso) + "</td>" +
+            '<td class="num" data-label="Ganancia">' + (p.costKnown ? fmtMoney(p.ganancia) : "—") + "</td>" +
+            '<td class="num" data-label="Margen">' + fmtPct(p.margen) + "</td>" +
+            '<td data-label="Rotación">' + claseBadge(p.clase) + "</td>" +
+            '<td class="num" data-label="Pz/día">' + fmtNum(Math.round(p.rotacion * 100) / 100) + "</td>" +
+            (showStock ? '<td class="num" data-label="Stock">' + (p.stock != null ? fmtNum(p.stock) : "—") + "</td>" +
+              '<td class="num" data-label="Días de stock">' + (p.stock === 0 && p.piezas > 0 ? '<span class="badge baja">Sin stock</span>' : (p.diasStock != null ? fmtNum(Math.round(p.diasStock)) : "—")) + "</td>" : "") +
+            '<td data-label="Última venta">' + fmtFecha(p.ultima) + "</td>";
+          return "<tr>" + tds + "</tr>";
+        }).join("");
+        box.innerHTML = '<table class="resp">' + head + "<tbody>" + body + "</tbody></table>";
+      }
+
+      function renderSlow(agg){
+        var slow = agg.products.filter(function(p){ return p.clase === "baja" || p.clase === "cero"; })
+          .sort(function(a,b){ return a.piezas - b.piezas || a.rotacion - b.rotacion; });
+        var box = document.getElementById("slowList");
+        document.getElementById("slowHint").textContent = slow.length
+          ? "Estos " + slow.length + " productos vendieron menos de media pieza por día (o nada) en el periodo."
+          : "Ningún producto está en rotación baja en este periodo. Todo se está moviendo.";
+        if(!slow.length){ box.innerHTML = ""; return; }
+        box.innerHTML = slow.slice(0, 40).map(function(p){
+          var dt = p.piezas === 0
+            ? (state.products.length ? "Está en tu catálogo y no se vendió en el periodo." : "Sin ventas en el periodo.")
+            : "Última venta: " + fmtFecha(p.ultima) + " · " + fmtNum(p.rotacion < 0.1 ? Math.round(p.rotacion*100)/100 : Math.round(p.rotacion*10)/10) + " pz/día";
+          return '<div class="slow-item"><div><div class="nm">' + esc(p.name) + '</div><div class="dt">' + esc(dt) + "</div></div>" +
+            '<div class="pz"><div><b>' + fmtNum(p.piezas) + " pz</b></div>" + claseBadge(p.clase) + "</div></div>";
+        }).join("") + (slow.length > 40 ? '<p class="muted">Y ' + (slow.length - 40) + " más en la tabla de productos.</p>" : "");
+      }
+
+      function renderClients(agg){
+        var card = document.getElementById("clientsCard");
+        if(!agg.clients.length){ card.hidden = true; return; }
+        card.hidden = false;
+        var rows = agg.clients.slice(0, 20);
+        var head = "<thead><tr><th>Cliente</th><th class='num'>Compras</th><th class='num'>Total comprado</th><th class='num'>Ticket prom.</th><th>Última compra</th></tr></thead>";
+        var body = rows.map(function(c){
+          return "<tr><td class='head-cell'>" + esc(c.name) + "</td>" +
+            '<td class="num" data-label="Compras">' + fmtNum(c.compras) + "</td>" +
+            '<td class="num" data-label="Total">' + fmtMoney(c.total) + "</td>" +
+            '<td class="num" data-label="Ticket prom.">' + fmtMoney(c.total / c.compras) + "</td>" +
+            '<td data-label="Última compra">' + fmtFecha(c.ultima) + "</td></tr>";
+        }).join("");
+        document.getElementById("clientsTable").innerHTML = '<table class="resp">' + head + "<tbody>" + body + "</tbody></table>";
+      }
+
+      function renderRecent(agg){
+        var box = document.getElementById("recentSales");
+        var recent = agg.sales.slice().sort(function(a,b){ return (b.date || 0) - (a.date || 0); }).slice(0, 25);
+        if(!recent.length){ box.innerHTML = '<p class="muted">No hay ventas en el periodo elegido.</p>'; return; }
+        box.innerHTML = recent.map(function(s){
+          var title = fmtFecha(s.date) + (s.client ? " · " + s.client : "") + " · " + s.items.length + (s.items.length === 1 ? " producto" : " productos");
+          var items = s.items.map(function(it){
+            return "<div><span>" + esc(it.name) + " × " + fmtNum(it.qty) + "</span><span>" + (it.subtotal != null ? fmtMoney(it.subtotal) : "—") + "</span></div>";
+          }).join("");
+          var gan = s.profit != null ? '<div><span class="muted">Ganancia de la venta</span><span>' + fmtMoney(s.profit) + "</span></div>" : "";
+          return '<details class="sale"><summary><span>' + esc(title) + "</span><b>" + fmtMoney(s.total) + "</b></summary>" +
+            '<div class="items">' + items + gan + "</div></details>";
+        }).join("");
+      }
+
+      /* ================= Cargar y procesar el respaldo ================= */
+      function showError(msg){
+        var e = document.getElementById("errBox");
+        e.textContent = msg; e.style.display = "block";
+      }
+      function hideError(){ document.getElementById("errBox").style.display = "none"; }
+
+      function processData(data, fileName, isDemo){
+        hideError();
+        var arrays = collectArrays(data);
+        var salesRaw = bestArray(arrays, isSaleLike);
+        var productsRaw = bestArray(arrays.filter(function(a){ return a !== salesRaw; }), isProductLike);
+        var clientsRaw = bestArray(arrays.filter(function(a){ return a !== salesRaw && a !== productsRaw; }), isClientLike);
+
+        if(!salesRaw.length && !isDemo){
+          showError("El archivo se leyó, pero no encontré ventas dentro.\n" +
+            "Listas encontradas: " + arrays.length + " (productos: " + productsRaw.length + ", clientes: " + clientsRaw.length + ").\n" +
+            "Asegúrate de subir el respaldo completo de DIGAR POS, el que trae ventas, productos y clientes.");
+          return;
+        }
+
+        var products = normalizeProducts(productsRaw);
+        var catalog = catalogLookup(products);
+        var sales = normalizeSales(salesRaw, catalog);
+        var clients = normalizeClients(clientsRaw);
+
+        var dates = sales.map(function(s){ return s.date; }).filter(Boolean).sort(function(a,b){ return a - b; });
+        state.sales = sales; state.products = products; state.clients = clients;
+        state.fileName = fileName; state.demo = !!isDemo;
+        state.minDate = dates.length ? startOfDay(dates[0]) : null;
+        state.maxDate = dates.length ? startOfDay(dates[dates.length - 1]) : null;
+        state.dateless = sales.length - dates.length;
+        state.hasCost = products.some(function(p){ return p.cost != null; }) ||
+          sales.some(function(s){ return s.items.some(function(it){ return it.cost != null; }); });
+        state.from = null; state.to = null;
+
+        document.querySelectorAll(".chip").forEach(function(ch){ ch.classList.toggle("on", ch.getAttribute("data-preset") === "todo"); });
+        var df = document.getElementById("dateFrom"), dt = document.getElementById("dateTo");
+        if(state.minDate){ df.min = dayKey(state.minDate); df.value = dayKey(state.minDate); }
+        if(state.maxDate){ dt.max = dayKey(state.maxDate); dt.value = dayKey(state.maxDate); df.max = dayKey(state.maxDate); dt.min = dayKey(state.minDate); }
+
+        document.getElementById("demoBanner").hidden = !state.demo;
+        var cb = document.getElementById("costBanner");
+        if(!state.hasCost){
+          cb.hidden = false;
+          cb.textContent = "Ojo: este archivo no trae el costo de los productos, así que la ganancia y el margen no se pueden calcular. Las ventas, piezas y rotación sí son exactas.";
+        } else cb.hidden = true;
+
+        document.getElementById("fileMeta").innerHTML =
+          "<b>" + esc(fileName) + "</b><br><span>" +
+          fmtNum(sales.length) + " ventas · " + fmtNum(products.length) + " productos · " + fmtNum(clients.length) + " clientes" +
+          (state.minDate ? " · Del " + fmtFecha(state.minDate) + " al " + fmtFecha(state.maxDate) : " · Sin fechas en las ventas") +
+          (state.dateless ? " · " + state.dateless + " ventas sin fecha" : "") + "</span>";
+
+        document.getElementById("footNote").textContent = state.demo ? "" :
+          "Los números salen tal cual de tu archivo: si una venta no trae costo en el respaldo, su ganancia se calcula con el costo actual del producto en tu catálogo.";
+
+        document.getElementById("carga").hidden = true;
+        document.getElementById("app").hidden = false;
+        render();
+        window.scrollTo(0, 0);
+      }
+
+      function processText(text, fileName){
+        var data;
+        try{ data = JSON.parse(text); }
+        catch(e){
+          showError("Ese archivo no se pudo leer como respaldo (no es un JSON válido). Exporta de nuevo el respaldo desde DIGAR POS y vuelve a intentarlo.");
+          return;
+        }
+        processData(data, fileName, false);
+      }
+
+      /* ================= Datos de ejemplo ================= */
+      function demoData(){
+        var prods = [
+          { nombre: "Chocolate con leche 18 g", precio: 9, costo: 7.1, stock: 153 },
+          { nombre: "Chocolate con cacahuate 48 g", precio: 15, costo: 12.7, stock: 64 },
+          { nombre: "Chocolate con caramelo 48 g", precio: 15, costo: 12.9, stock: 58 },
+          { nombre: "Gomitas enchiladas 100 pz", precio: 110, costo: 98.5, stock: 12 },
+          { nombre: "Chocolate relleno de avellana", precio: 10, costo: 7.6, stock: 0 },
+          { nombre: "Malvavisco con chocolate", precio: 6, costo: 4.4, stock: 210 },
+          { nombre: "Caramelo de fresa 50 pz", precio: 55, costo: 43, stock: 30 },
+          { nombre: "Chicle de menta 40 pz", precio: 38, costo: 30.5, stock: 5 },
+          { nombre: "Galleta con chispas", precio: 12, costo: 10.8, stock: 44 },
+          { nombre: "Paleta de tamarindo", precio: 5, costo: 4.6, stock: 320 },
+          { nombre: "Mazapán de cacahuate", precio: 7, costo: 6.2, stock: 96 },
+          { nombre: "Dulce de leche quemada", precio: 8, costo: 7.4, stock: 18 }
+        ];
+        var clientes = ["Tienda La Esquina", "Abarrotes Mary", "Don Pedro", "Miscelánea Lupita", "El Farolito", ""];
+        var seed = 42;
+        function rnd(){ seed = (seed * 1103515245 + 12345) % 2147483648; return seed / 2147483648; }
+        var ventas = [];
+        var today = new Date(); today.setHours(11, 0, 0, 0);
+        for(var d = 41; d >= 0; d--){
+          var fecha = new Date(today); fecha.setDate(fecha.getDate() - d);
+          var nVentas = 6 + Math.floor(rnd() * 9);
+          for(var v = 0; v < nVentas; v++){
+            var nItems = 1 + Math.floor(rnd() * 3);
+            var items = [], total = 0, gan = 0;
+            for(var i = 0; i < nItems; i++){
+              var p = prods[Math.floor(rnd() * rnd() * prods.length)];
+              var qty = 1 + Math.floor(rnd() * 14);
+              items.push({ nombre: p.nombre, cantidad: qty, precio: p.precio, costo: p.costo, subtotal: qty * p.precio });
+              total += qty * p.precio; gan += qty * (p.precio - p.costo);
+            }
+            ventas.push({ fecha: fecha.toISOString(), cliente: clientes[Math.floor(rnd() * clientes.length)], items: items, total: total, ganancia: Math.round(gan * 100) / 100 });
+          }
+        }
+        return { productos: prods, ventas: ventas, clientes: clientes.filter(Boolean).map(function(c){ return { nombre: c, telefono: "", ruta: "Ruta centro" }; }) };
+      }
+
+      /* ================= Eventos ================= */
+      var drop = document.getElementById("drop");
+      var fileInput = document.getElementById("fileInput");
+      document.getElementById("btnFile").addEventListener("click", function(){ fileInput.click(); });
+      fileInput.addEventListener("change", function(){
+        var f = fileInput.files && fileInput.files[0];
+        if(f) readFile(f);
+        fileInput.value = "";
+      });
+      ["dragenter","dragover"].forEach(function(ev){ drop.addEventListener(ev, function(e){ e.preventDefault(); drop.classList.add("drag"); }); });
+      ["dragleave","drop"].forEach(function(ev){ drop.addEventListener(ev, function(e){ e.preventDefault(); drop.classList.remove("drag"); }); });
+      drop.addEventListener("drop", function(e){
+        var f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+        if(f) readFile(f);
+      });
+      function readFile(f){
+        var reader = new FileReader();
+        reader.onload = function(){ processText(String(reader.result || ""), f.name); };
+        reader.onerror = function(){ showError("No se pudo abrir el archivo. Inténtalo de nuevo."); };
+        reader.readAsText(f);
+      }
+      document.getElementById("btnPaste").addEventListener("click", function(){
+        var box = document.getElementById("pasteBox");
+        box.hidden = !box.hidden;
+        if(!box.hidden) document.getElementById("pasteArea").focus();
+      });
+      document.getElementById("btnAnalyzePaste").addEventListener("click", function(){
+        var t = document.getElementById("pasteArea").value.trim();
+        if(!t){ showError("Pega primero el contenido del respaldo en el cuadro de texto."); return; }
+        processText(t, "Contenido pegado");
+      });
+      document.getElementById("btnDemo").addEventListener("click", function(){
+        processData(demoData(), "Datos de ejemplo", true);
+      });
+      document.getElementById("btnReset").addEventListener("click", function(){
+        document.getElementById("app").hidden = true;
+        document.getElementById("carga").hidden = false;
+        hideError();
+        window.scrollTo(0, 0);
+      });
+
+      document.querySelectorAll(".chip").forEach(function(ch){
+        ch.addEventListener("click", function(){
+          document.querySelectorAll(".chip").forEach(function(c){ c.classList.remove("on"); });
+          ch.classList.add("on");
+          var preset = ch.getAttribute("data-preset");
+          var df = document.getElementById("dateFrom"), dt = document.getElementById("dateTo");
+          if(!state.maxDate) return;
+          if(preset === "todo"){ state.from = null; state.to = null; df.value = dayKey(state.minDate); dt.value = dayKey(state.maxDate); }
+          else if(preset === "mes"){
+            state.from = new Date(state.maxDate.getFullYear(), state.maxDate.getMonth(), 1);
+            state.to = state.maxDate; df.value = dayKey(state.from); dt.value = dayKey(state.to);
+          } else {
+            var n = parseInt(preset, 10);
+            var from = startOfDay(state.maxDate); from.setDate(from.getDate() - (n - 1));
+            state.from = from; state.to = state.maxDate; df.value = dayKey(from); dt.value = dayKey(state.maxDate);
+          }
+          render();
+        });
+      });
+      function onDateChange(){
+        document.querySelectorAll(".chip").forEach(function(c){ c.classList.remove("on"); });
+        var f = document.getElementById("dateFrom").value, t = document.getElementById("dateTo").value;
+        state.from = f ? parseDate(f) : null;
+        state.to = t ? parseDate(t) : null;
+        render();
+      }
+      document.getElementById("dateFrom").addEventListener("change", onDateChange);
+      document.getElementById("dateTo").addEventListener("change", onDateChange);
+      document.getElementById("prodSearch").addEventListener("input", function(e){
+        state.query = e.target.value;
+        if(state.lastAgg) renderProducts(state.lastAgg);
+      });
+      document.getElementById("prodSort").addEventListener("change", function(e){
+        state.sort = e.target.value;
+        if(state.lastAgg) renderProducts(state.lastAgg);
+      });
+
+      document.getElementById("btnCsv").addEventListener("click", function(){
+        if(!state.lastAgg) return;
+        var rows = sortedProducts(state.lastAgg);
+        var lines = ["Producto;Piezas vendidas;Vendido $;Ganancia $;Margen %;Veces vendido;Rotación (pz/día);Clasificación;Stock actual;Días de stock;Última venta"];
+        rows.forEach(function(p){
+          function q(v){ v = String(v == null ? "" : v); return /[;"\n]/.test(v) ? '"' + v.replace(/"/g,'""') + '"' : v; }
+          lines.push([q(p.name), p.piezas, Math.round(p.ingreso * 100) / 100,
+            p.costKnown ? Math.round(p.ganancia * 100) / 100 : "",
+            p.margen != null ? Math.round(p.margen * 10) / 10 : "",
+            p.veces, Math.round(p.rotacion * 100) / 100,
+            p.clase === "alta" ? "Alta" : p.clase === "media" ? "Media" : p.clase === "baja" ? "Baja" : "Sin ventas",
+            p.stock != null ? p.stock : "", p.diasStock != null ? Math.round(p.diasStock) : "",
+            p.ultima ? dayKey(p.ultima) : ""].join(";"));
+        });
+        var blob = new Blob(["\ufeff" + lines.join("\r\n")], { type: "text/csv;charset=utf-8" });
+        var a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "resumen-productos-digar.csv";
+        document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(function(){ URL.revokeObjectURL(a.href); }, 4000);
+      });
+
+      document.getElementById("btnCopy").addEventListener("click", function(){
+        if(!state.lastAgg) return;
+        var agg = state.lastAgg;
+        var top = agg.products.slice().sort(function(a,b){ return b.piezas - a.piezas; }).filter(function(p){ return p.piezas > 0; }).slice(0,3);
+        var slow = agg.products.filter(function(p){ return p.clase === "baja" || p.clase === "cero"; }).slice(0,3);
+        var txt = "Análisis de ventas DIGAR\n" +
+          "Periodo: " + (state.minDate ? fmtFecha(state.from || state.minDate) + " al " + fmtFecha(state.to || state.maxDate) : "sin fechas") + "\n" +
+          "Ventas totales: " + fmtMoney(agg.totalVentas) + " en " + agg.sales.length + " ventas\n" +
+          (agg.profit != null ? "Ganancia: " + fmtMoney(agg.profit) + "\n" : "") +
+          "Ticket promedio: " + fmtMoney(agg.ticket) + "\n" +
+          "Más vendidos: " + top.map(function(p){ return p.name + " (" + fmtNum(p.piezas) + " pz)"; }).join(", ") + "\n" +
+          (slow.length ? "Se mueven poco: " + slow.map(function(p){ return p.name; }).join(", ") : "");
+        function done(){ var b = document.getElementById("btnCopy"); var old = b.textContent; b.textContent = "¡Copiado!"; setTimeout(function(){ b.textContent = old; }, 2000); }
+        if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(txt).then(done, function(){ fallbackCopy(txt); done(); });
+        else { fallbackCopy(txt); done(); }
+      });
+      function fallbackCopy(txt){
+        var ta = document.createElement("textarea");
+        ta.value = txt; ta.style.position = "fixed"; ta.style.opacity = "0";
+        document.body.appendChild(ta); ta.select();
+        try{ document.execCommand("copy"); }catch(e){}
+        ta.remove();
+      }
+    </script>
+  </body>
+</html>
